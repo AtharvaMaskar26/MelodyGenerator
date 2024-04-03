@@ -2,6 +2,9 @@ import os
 import music21 as m21
 
 KERN_DATASET_PATH = "deutschl\\essen\\europa\\deutschl\\test"
+SAVE_DIR = "dataset"
+SINGLE_FILE_DATASET = "file_dataset"
+SEQUENCE_LENGTH = 64
 
 # These are all the lengths of notes that are acceptable
 ACCEPTABLE_DURATION = [
@@ -17,7 +20,7 @@ ACCEPTABLE_DURATION = [
 
 # kern, MIDI, MusicXML -> m21 -> kern, MIDI, .....
 
-# This is a boolean function that returns if a song has an acceptable length or not
+# This is a boolean function that returns true if a song has an acceptable length 
 def has_acceptable_durations(song, acceptable_duration):
     # The .flat function flattens the entire object into a list
     # .notesAndRests it filters out all elements that are not Notes and Rest and only keeps them
@@ -49,7 +52,7 @@ def load_songs_in_kern(dataset_path):
                 # Load all the songs in an array
                 songs.append(song)
 
-        return songs
+    return songs
 
 def transpose(song):
     # get key from the song 
@@ -67,7 +70,7 @@ def transpose(song):
     if not isinstance(key, m21.key.Key):
         # m21 function that analyzes the key
         key = song.analyze("Key")
-        
+
     print(key)
 
     # get interval for transposition
@@ -86,6 +89,76 @@ def transpose(song):
 
     return transposed_song
 
+# Encode the song in time series representation
+def encode_song(song, time_step = 0.25):
+    # pitch = 60, duration = 1.0 -> [60, " _ ", " _ ", " _ "]
+
+    encoded_song = []
+
+    # Flatten the notes and rests into a single list
+    for event in song.flat.notesAndRests:
+
+        # if the event is a note
+        if isinstance(event, m21.note.Note):
+            symbol = event.pitch.midi
+        # event is a rest 
+        elif isinstance(event, m21.note.Rest):
+            symbol = 'r'
+
+        # Convert the note/rest into time series notation
+        # We take how long the event was in quarter length
+        # And then divide it by time step, this gives us how many steps are required for the entire note duration
+        steps = int(event.duration.quarterLength / time_step)
+
+        # We go through all possible steps 
+        for step in range(steps):
+            if step == 0:
+                encoded_song.append(symbol)
+            else:
+                encoded_song.append("_")
+
+    
+    # Cast the entire song to a list 
+    encoded_song = " ".join(map(str, encoded_song))
+
+    return encoded_song
+
+
+def load(file_path):
+    with open(file_path, "r") as fp:
+        song = fp.read()
+
+    return song
+
+# This function takes all the files and puts them into a single file so it ascts as a single dataset and then adds a delimtter at the end. 
+## When we are passing our data to a LSTM we need to pass sequences that are fixed in length. 
+# 
+def create_single_file_dataset(dataset_path, file_dataset_path, sequence_length):
+    # Defines the end of a song
+    new_song_delimitter = '/ ' * sequence_length
+    songs = ""
+
+    # Load encoded songs and add delimiters 
+    for path, _, files in os.walk(dataset_path):
+        for file in files: 
+            file_path = os.path.join(path, file)
+            song = load(file_path)  
+            type(song)
+            songs = songs + song + " " + new_song_delimitter
+
+    # as we use '/ ' as our delimitter, at the end of the song we get an extra space that we don't need, so we remove that. 
+    songs = songs[:-1]
+
+    # Save string all the dataset 
+    with open(file_dataset_path, "w") as fp:
+        fp.write(songs)
+    
+    return songs
+
+
+    # Save the string that contains all the data in a single file 
+
+
 
 def preprocess(dataset_path):
     # Load the folk songs 
@@ -94,7 +167,7 @@ def preprocess(dataset_path):
     print(f"Loaded {len(songs)} songs.")
 
     # Iterating through each song and performing the folloing steps!
-    for song in songs:
+    for i, song in enumerate(songs):
         # Filter out songs that have non acceptable durations
         if not has_acceptable_durations(song, ACCEPTABLE_DURATION):
             continue
@@ -103,22 +176,14 @@ def preprocess(dataset_path):
         song = transpose(song)
 
         # encode songs with music time series representation 
+        encoded_song = encode_song(song) 
 
         # Save songs to a text file 
+        save_path = os.path.join(SAVE_DIR, str(i))
+
+        with open(save_path, 'w') as fp: 
+            fp.write(encoded_song)
 
 if __name__ == "__main__":
-    songs = load_songs_in_kern(KERN_DATASET_PATH)
-    print(f"Loaded {len(songs)} songs.")
-
-    song = songs[0]
-
-    print(f"Has acceptable duration? {has_acceptable_durations(song, ACCEPTABLE_DURATION)}")
-
-    # Tranpose song 
-    transposed_song = transpose(song)
-
-    # This song is a music21 object. 
-    # This will fire our song in Musescore
-    song.show()
-    # Display the tranposed song
-    transposed_song.show()
+    preprocess(KERN_DATASET_PATH)
+    songs = create_single_file_dataset(SAVE_DIR, SINGLE_FILE_DATASET, SEQUENCE_LENGTH)
