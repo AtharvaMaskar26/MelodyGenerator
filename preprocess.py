@@ -1,6 +1,9 @@
 import os
 import music21 as m21
 import json
+import tensorflow.keras as keras
+import numpy as np
+
 
 KERN_DATASET_PATH = "deutschl\\essen\\europa\\deutschl\\test"
 SAVE_DIR = "dataset"
@@ -202,10 +205,54 @@ def preprocess(dataset_path):
         with open(save_path, 'w') as fp: 
             fp.write(encoded_song)
 
+def convert_songs_to_int(songs):
+    int_songs = []
+
+    # load mappings  
+    with open(MAPPING_PATH, 'r') as fp:
+        mappings = json.load(fp)
+
+    # Cast song strings to a list 
+    songs = songs.split()
+
+    # map songs to int
+    for symbol in songs:
+        int_songs.append(mappings[symbol])
+
+    return int_songs 
+
+def generating_training_sequences(sequence_length):
+    # load songs and map them to int 
+    songs = load(SINGLE_FILE_DATASET)
+    int_songs = convert_songs_to_int(songs)
+
+    inputs = []
+    targets = []
+
+    # generate the training sequence 
+    num_sequences = len(int_songs) - sequence_length
+    
+    for i in range(num_sequences):
+        inputs.append(int_songs[i:i+sequence_length])
+        targets.append(int_songs[i+sequence_length])
+
+    # one hot encode the sequence
+    vocabulary_size = len(set(int_songs))
+
+    inputs = keras.utils.to_categorical(inputs, num_classes = vocabulary_size)
+    targets = np.array(targets)
+
+    return inputs, targets
+
+
 def main():
     preprocess(KERN_DATASET_PATH)
     songs = create_single_file_dataset(SAVE_DIR, SINGLE_FILE_DATASET, SEQUENCE_LENGTH)
     create_mapping(songs, MAPPING_PATH)
+
+    inputs, targets = generating_training_sequences(SEQUENCE_LENGTH)
+    
+    a = 1
 
 
 if __name__ == "__main__":
