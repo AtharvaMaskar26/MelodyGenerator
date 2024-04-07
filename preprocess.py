@@ -1,10 +1,12 @@
 import os
 import music21 as m21
+import json
 
 KERN_DATASET_PATH = "deutschl\\essen\\europa\\deutschl\\test"
 SAVE_DIR = "dataset"
 SINGLE_FILE_DATASET = "file_dataset"
 SEQUENCE_LENGTH = 64
+MAPPING_PATH  = "mapping.json"
 
 # These are all the lengths of notes that are acceptable
 ACCEPTABLE_DURATION = [
@@ -156,8 +158,24 @@ def create_single_file_dataset(dataset_path, file_dataset_path, sequence_length)
     return songs
 
 
-    # Save the string that contains all the data in a single file 
 
+# Creating a dataset of symbols
+def create_mapping(songs, mapping_path):
+    mappings = {}
+    # identify the vocabulary
+    # Splitting all the symbols of the string into each element 
+    songs = songs.split()
+
+    # Creating only one instance of a symbol 
+    vocabulary = list(set(songs))
+
+    # Create a mapping 
+    for i, symbol in enumerate(vocabulary):
+        mappings[symbol] = i
+
+    # Save vocabulary to a JSON file 
+    with open(mapping_path, "w") as fp: 
+        json.dump(mappings, fp, indent=4)
 
 
 def preprocess(dataset_path):
@@ -184,6 +202,11 @@ def preprocess(dataset_path):
         with open(save_path, 'w') as fp: 
             fp.write(encoded_song)
 
-if __name__ == "__main__":
+def main():
     preprocess(KERN_DATASET_PATH)
     songs = create_single_file_dataset(SAVE_DIR, SINGLE_FILE_DATASET, SEQUENCE_LENGTH)
+    create_mapping(songs, MAPPING_PATH)
+
+
+if __name__ == "__main__":
+    main()
