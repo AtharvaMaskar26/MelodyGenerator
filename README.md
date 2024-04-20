@@ -12,32 +12,35 @@ A Deep Learning based Melody Generator build using RNN & LSTM
 - [License](#license)
 
 ## Introduction
-Describe your project and its purpose briefly. Mention the technologies used.
+HarmonAI is a deep learning-based melody generator built using RNN & LSTM. It allows users to pass in a seed melody and temperature (randomness) to complete the melody ahead of that.
+
 
 ## Features
-- List the current features of your melody generator.
-- Mention any unique or noteworthy functionalities.
+- Generate melodies based on a seed melody and temperature.
+- Explore the creative possibilities of AI-generated music.
+- Easy-to-use interface for melody generation.
 
 ## Future Scope
-- Discuss possible future enhancements.
-- Include features or improvements you plan to add.
+- Experiment with more Deep Learning models to compare the results. 
+- Try transfomer based architecture. 
 
 ## Getting Started
-- Prerequisites: List any software, libraries, or tools needed to run the project.
-- Installation instructions: Provide steps to set up the project.
+
+### Clone the repository 
+`git clone https://github.com/AtharvaMaskar26/harmon-ai.git`
+
+### install dependencies 
+`pip install -r requirements.txt`
+
+### Run the streamlit app 
+`streamlit run app.py`
+
 
 ## Usage
-- Provide examples or instructions on how to use the melody generator.
-- Include code snippets or screenshots if helpful.
+- You can train the model for your own dataset using the `preprocess.py` and `train.py` files. 
+
+- If you want to try different models, you can check out the code in `melodygenerator.py` file.
 
 ## Contributing
-- Explain how others can contribute to your project.
-- Provide guidelines for submitting pull requests.
-
-## License
-- Specify the license under which your project is distributed.
-- Include any additional terms or conditions.
-
----
-
-Feel free to customize this template to fit your project's specific details and needs!
+- Contributions are welcome! Fork the repository and submit a pull request.
+- Report any issues or suggest new features through the issue tracker.
