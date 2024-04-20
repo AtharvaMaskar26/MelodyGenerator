@@ -2,6 +2,7 @@ import json
 import numpy as np
 import tensorflow.keras as keras
 import music21 as m21
+import streamlit as st
 
 from preprocess import SEQUENCE_LENGTH, MAPPING_PATH
 
@@ -89,7 +90,7 @@ class MelodyGenerator:
         return index
 
 
-    def save_melody(self, melody, step_duration=0.25, format="midi", file_name="dspl.mid"):
+    def save_melody(self, melody, step_duration=0.25, format="midi", file_name="newtrial1.mid"):
         """Converts a melody into a MIDI file
 
         :param melody (list of str):
@@ -136,10 +137,10 @@ class MelodyGenerator:
 
         # write the m21 stream to a midi file
         stream.write(format, file_name)
+        
  
 
 if __name__ == "__main__":
     mg = MelodyGenerator()
     seed = "55 _ _ _ 60 _ _ _ 55 _ _ _ 55 _"
     melody = mg.generate_melody(seed, 500, SEQUENCE_LENGTH, 0.9)
-    mg.save_melody(melody)
