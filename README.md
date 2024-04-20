@@ -9,7 +9,6 @@ A Deep Learning based Melody Generator build using RNN & LSTM
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Introduction
 HarmonAI is a deep learning-based melody generator built using RNN & LSTM. It allows users to pass in a seed melody and temperature (randomness) to complete the melody ahead of that.
